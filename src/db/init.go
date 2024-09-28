@@ -4,8 +4,14 @@ import (
 	"github.com/shaileshhb/quiz/src/db/models"
 )
 
-var Quiz []models.Quiz
+// Database will mimic a database
+type Database struct {
+	Quiz []models.Quiz
+}
 
-func init() {
-	Quiz = make([]models.Quiz, 0)
+// NewDatabase will initialize a new database instance
+func NewDatabase() *Database {
+	return &Database{
+		Quiz: []models.Quiz{},
+	}
 }

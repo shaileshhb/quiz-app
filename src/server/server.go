@@ -4,14 +4,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/rs/zerolog"
+	"github.com/shaileshhb/quiz/src/controllers"
+	"github.com/shaileshhb/quiz/src/db"
 	"github.com/shaileshhb/quiz/src/routes"
 )
 
 // Server Struct For Start the equisplit service.
 type Server struct {
-	App    *fiber.App
-	Router fiber.Router
-	Log    zerolog.Logger
+	App      *fiber.App
+	Router   fiber.Router
+	Database *db.Database
+	Log      zerolog.Logger
 }
 
 // RegisterRoutes will be implemented by routes package methods to register their routes
@@ -20,9 +23,10 @@ type RegisterRoutes interface {
 }
 
 // NewServer will initialize the server with logger and fiber router.
-func NewServer(log zerolog.Logger) *Server {
+func NewServer(log zerolog.Logger, database *db.Database) *Server {
 	return &Server{
-		Log: log,
+		Database: database,
+		Log:      log,
 	}
 }
 
@@ -53,7 +57,8 @@ func (ser *Server) register(routes []RegisterRoutes) {
 }
 
 func (ser *Server) RegisterModuleRoutes() {
-	quizcon := routes.NewQuizRoute(ser.Log)
+	quizcon := controllers.NewQuizController(ser.Database)
+	quizroute := routes.NewQuizRoute(quizcon, ser.Log)
 
-	ser.register([]RegisterRoutes{quizcon})
+	ser.register([]RegisterRoutes{quizroute})
 }

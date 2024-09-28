@@ -5,13 +5,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/shaileshhb/quiz/src/db"
 	"github.com/shaileshhb/quiz/src/log"
 	"github.com/shaileshhb/quiz/src/server"
 )
 
 func main() {
 	logger := log.InitializeLogger()
-	ser := server.NewServer(logger)
+	database := db.NewDatabase()
+	ser := server.NewServer(logger, database)
 	ser.InitializeRouter()
 
 	ser.RegisterModuleRoutes()
