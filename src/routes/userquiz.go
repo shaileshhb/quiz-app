@@ -27,9 +27,9 @@ func NewUserQuizRoute(con controllers.UserQuizController, log zerolog.Logger) *u
 
 // RegisterRoute registers all endpoints to router.
 func (u *userQuizRoute) RegisterRoute(router fiber.Router) {
-	router.Post("/users/quiz/:quizID/start", security.MandatoryAuthMiddleware, u.startQuiz)
-	router.Post("/users/quiz/:quizID/attempt/:attemptID", security.MandatoryAuthMiddleware, u.submitAnswer)
-	router.Get("/users/quiz/:quizID/results", security.MandatoryAuthMiddleware, u.getUserQuizResults)
+	router.Post("/users/quizzes/:quizID/start", security.MandatoryAuthMiddleware, u.startQuiz)
+	router.Post("/users/quizzes/:quizID/attempt/:attemptID", security.MandatoryAuthMiddleware, u.submitAnswer)
+	router.Get("/users/quizzes/:quizID/results", security.MandatoryAuthMiddleware, u.getUserQuizResults)
 	u.log.Info().Msg("User quiz routes registered")
 }
 

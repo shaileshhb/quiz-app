@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -36,6 +35,10 @@ func (controller *quizController) Create(quiz *models.Quiz) error {
 		return err
 	}
 
+	if quiz.MaxTime == 0 {
+		quiz.MaxTime = 2
+	}
+
 	controller.assignIDs(quiz)
 
 	controller.db.Quiz = append(controller.db.Quiz, *quiz)
@@ -50,8 +53,7 @@ func (controller *quizController) GetQuiz(quizID uuid.UUID) (*models.Quiz, error
 	for _, q := range controller.db.Quiz {
 		if q.ID == quizID {
 			isQuizFound = true
-			cq, _ := json.Marshal(q)
-			json.Unmarshal(cq, &currentQuiz)
+
 			currentQuiz = utils.CopyQuiz(q)
 			break
 		}

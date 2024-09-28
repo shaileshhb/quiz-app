@@ -31,9 +31,5 @@ func (q *Quiz) Validate() error {
 		}
 	}
 
-	if q.MaxTime == 0 {
-		q.MaxTime = 2
-	}
-
 	return nil
 }

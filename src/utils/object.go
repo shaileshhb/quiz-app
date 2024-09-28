@@ -12,6 +12,7 @@ func CopyQuiz(q models.Quiz) models.Quiz {
 	return models.Quiz{
 		ID:        q.ID,
 		Title:     q.Title,
+		MaxTime:   q.MaxTime,
 		Questions: questions,
 	}
 }
