@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/shaileshhb/quiz/src/controllers"
 	"github.com/shaileshhb/quiz/src/db/models"
+	"github.com/shaileshhb/quiz/src/security"
 )
 
 // quizRoute contains reference to quiz controller and logger
@@ -16,6 +17,7 @@ type quizRoute struct {
 	log zerolog.Logger
 }
 
+// NewQuizRoute will create new instance of quizRoute.
 func NewQuizRoute(con controllers.QuizController,
 	log zerolog.Logger) *quizRoute {
 	return &quizRoute{
@@ -24,9 +26,11 @@ func NewQuizRoute(con controllers.QuizController,
 	}
 }
 
+// RegisterRoute registers all endpoints to router.
 func (qr *quizRoute) RegisterRoute(router fiber.Router) {
-	router.Post("/quiz", qr.CreateQuiz)
-	router.Get("/quiz/:quizID", qr.GetQuiz)
+	router.Post("/quiz", security.MandatoryAuthMiddleware, qr.CreateQuiz)
+	router.Get("/quiz/:quizID", security.MandatoryAuthMiddleware, qr.GetQuiz)
+
 	qr.log.Info().Msg("Quiz routes registered")
 }
 
