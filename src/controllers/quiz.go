@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/shaileshhb/quiz/src/db"
 	"github.com/shaileshhb/quiz/src/db/models"
+	"github.com/shaileshhb/quiz/src/utils"
 )
 
 // QuizController will consist of controllers
@@ -48,9 +49,10 @@ func (controller *quizController) GetQuiz(quizID uuid.UUID) (*models.Quiz, error
 
 	for _, q := range controller.db.Quiz {
 		if q.ID == quizID {
-			fmt.Println("quiz found!!!")
 			isQuizFound = true
-			currentQuiz = q
+			cq, _ := json.Marshal(q)
+			json.Unmarshal(cq, &currentQuiz)
+			currentQuiz = utils.CopyQuiz(q)
 			break
 		}
 	}
@@ -58,14 +60,6 @@ func (controller *quizController) GetQuiz(quizID uuid.UUID) (*models.Quiz, error
 	if !isQuizFound {
 		return nil, errors.New("quiz not found")
 	}
-
-	for i := range currentQuiz.Questions {
-		for j := range currentQuiz.Questions[i].Options {
-			currentQuiz.Questions[i].Options[j].IsCorrect = nil
-		}
-	}
-
-	fmt.Printf("%+v\n", controller.db.Quiz)
 
 	return &currentQuiz, nil
 }

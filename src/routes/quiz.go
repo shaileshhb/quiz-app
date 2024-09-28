@@ -58,7 +58,9 @@ func (qr *quizRoute) CreateQuiz(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(http.StatusCreated).JSON(quiz.ID)
+	return c.Status(http.StatusCreated).JSON(map[string]uuid.UUID{
+		"quizID": quiz.ID,
+	})
 }
 
 // CreateQuiz will create new quiz.
