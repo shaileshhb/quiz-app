@@ -109,7 +109,7 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 		})
 	}
 
-	err = ur.con.SubmitAnswer(&userResponse)
+	correctOption, err := ur.con.SubmitAnswer(&userResponse)
 	if err != nil {
 		ur.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
@@ -117,5 +117,8 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(http.StatusCreated).JSON(userResponse)
+	return c.Status(http.StatusCreated).JSON(map[string]interface{}{
+		"isCorrect":     userResponse.IsCorrect,
+		"correctOption": correctOption,
+	})
 }

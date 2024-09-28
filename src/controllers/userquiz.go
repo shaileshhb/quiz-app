@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/shaileshhb/quiz/src/db"
@@ -12,8 +11,8 @@ import (
 
 // UserQuizController will consist of controllers methods that would be implemented by userQuizController
 type UserQuizController interface {
-	StartQuiz(userQuiz *models.UserQuizAttempts) error
-	SubmitAnswer(userResponse *models.UserResponse) error
+	StartQuiz(*models.UserQuizAttempts) error
+	SubmitAnswer(*models.UserResponse) (*models.Option, error)
 }
 
 // userQuizController will contain reference to db.
@@ -56,51 +55,59 @@ func (controller *userQuizController) StartQuiz(userQuiz *models.UserQuizAttempt
 	return nil
 }
 
-// SubmitAnswer will submit user's answer for a given question.
-func (controller *userQuizController) SubmitAnswer(userResponse *models.UserResponse) error {
+// SubmitAnswer will submit user's answer for a given question and return correct answer and error if any.
+func (controller *userQuizController) SubmitAnswer(userResponse *models.UserResponse) (*models.Option, error) {
 	err := validations.DoesUserIDExist(controller.db, userResponse.UserID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = validations.DoesQuizIDExist(controller.db, userResponse.QuizID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	userQuiz, err := controller.getUserQuiz(userResponse.UserQuizAttemptID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = controller.isQuestionAnswered(userQuiz, userResponse.QuestionID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = controller.doesQuestionExistForQuiz(userResponse.QuizID, userResponse.QuestionID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	quiz, err := controller.getQuizByID(userResponse.QuizID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	question, err := controller.getQuestionByID(quiz, userResponse.QuestionID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	correctOption := &models.Option{}
 	option, err := controller.getOptionByID(question, userResponse.SelectedOptionID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if *option.IsCorrect {
 		userResponse.IsCorrect = true
 		controller.updateUserQuizScore(userResponse.UserQuizAttemptID)
+		correctOption = option
+	} else {
+		// get correct option
+		correctOption, err = controller.getCorrectOption(question)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	userResponse.ID = uuid.New()
@@ -113,11 +120,7 @@ func (controller *userQuizController) SubmitAnswer(userResponse *models.UserResp
 		}
 	}
 
-	fmt.Println("==============================================")
-	fmt.Printf("%+v\n", controller.db.UserQuizAttempts)
-	fmt.Println("==============================================")
-
-	return nil
+	return correctOption, nil
 }
 
 // updateUserQuizScore will updaate the total score of the UserQuizAttempts.
@@ -162,6 +165,17 @@ func (controller *userQuizController) getOptionByID(question *models.Question, o
 	return nil, errors.New("option not found")
 }
 
+// getCorrectOption will fetch correct option.
+func (controller *userQuizController) getCorrectOption(question *models.Question) (*models.Option, error) {
+	for _, option := range question.Options {
+		if *option.IsCorrect {
+			return &option, nil
+		}
+	}
+
+	return nil, errors.New("correct option not found")
+}
+
 // doesQuestionExistForQuiz will check if question exist in the given quiz.
 func (controller *userQuizController) doesQuestionExistForQuiz(quizID, questionID uuid.UUID) error {
 
@@ -190,12 +204,6 @@ func (controller *userQuizController) getUserQuiz(userQuizAttemptID uuid.UUID) (
 
 // isQuestionAnswered will check if all question has been answered for a given user, if yes then it will return an error
 func (controller *userQuizController) isQuestionAnswered(userQuiz *models.UserQuizAttempts, questionID uuid.UUID) error {
-
-	fmt.Println("================================================================")
-	fmt.Printf("%+v\n", userQuiz.UserResponses)
-	fmt.Printf("%+v\n", questionID)
-	fmt.Println("================================================================")
-
 	for _, repsonse := range userQuiz.UserResponses {
 		if repsonse.QuestionID == questionID {
 			return errors.New("question already answered")
