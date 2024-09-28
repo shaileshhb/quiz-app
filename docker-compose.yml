@@ -1,0 +1,12 @@
+version: "3.0"
+
+services:
+  quizapp:
+    container_name: quizapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
