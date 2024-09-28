@@ -22,7 +22,7 @@
 *.out
 
 #Environment Variable File Should Not Be Upload
-#*.env
+*.env
 # Dependency directories (remove the comment below to include it)
 # vendor/
 

@@ -1,14 +1,13 @@
 package security
 
 import (
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/shaileshhb/quiz/src/db/models"
 )
-
-var jwtKey = "This should be in .env"
 
 // GenerateJWT will generate a JWT token for user login
 func GenerateJWT(user *models.User) (string, error) {
@@ -17,14 +16,14 @@ func GenerateJWT(user *models.User) (string, error) {
 		"iat": jwt.NewNumericDate(time.Now()),
 		"exp": jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), // 7 days
 	})
-	return token.SignedString([]byte(jwtKey))
+	return token.SignedString([]byte(os.Getenv("JWT_KEY")))
 }
 
 // ValidateJWT will validate JWT token and return user details if valid
 func ValidateJWT(t string) (*models.User, error) {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(t, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(jwtKey), nil
+		return []byte(os.Getenv("JWT_KEY")), nil
 	})
 	if err != nil {
 		return nil, err

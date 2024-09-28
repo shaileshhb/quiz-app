@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
 	"github.com/shaileshhb/quiz/src/db"
 	"github.com/shaileshhb/quiz/src/log"
 	"github.com/shaileshhb/quiz/src/server"
@@ -12,6 +13,12 @@ import (
 
 func main() {
 	logger := log.InitializeLogger()
+	err := godotenv.Load()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Error loading.env file")
+		return
+	}
+
 	database := db.NewDatabase()
 	ser := server.NewServer(logger, database)
 	ser.InitializeRouter()
