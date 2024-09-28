@@ -10,6 +10,7 @@ import (
 type Quiz struct {
 	ID        uuid.UUID  `json:"id"`
 	Title     string     `json:"title"`
+	MaxTime   uint64     `json:"maxTime"` // this will store time in minutes. Default value is 2 minutes
 	Questions []Question `json:"questions"`
 }
 
@@ -28,6 +29,10 @@ func (q *Quiz) Validate() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if q.MaxTime == 0 {
+		q.MaxTime = 2
 	}
 
 	return nil

@@ -8,8 +8,9 @@ import (
 
 // Database will mimic a database
 type Database struct {
-	Quiz  []models.Quiz
-	Users []models.User
+	Quiz             []models.Quiz
+	Users            []models.User
+	UserQuizAttempts []models.UserQuizAttempts
 }
 
 // NewDatabase will initialize a new database instance

@@ -63,7 +63,10 @@ func (ser *Server) RegisterModuleRoutes() {
 	usercon := controllers.NewUserController(ser.Database)
 	userroute := routes.NewUserRoute(usercon, ser.Log)
 
+	userquizcon := controllers.NewUserQuizController(ser.Database)
+	userquizroute := routes.NewUserQuizRoute(userquizcon, ser.Log)
+
 	ser.register([]RegisterRoutes{
-		quizroute, userroute,
+		quizroute, userroute, userquizroute,
 	})
 }

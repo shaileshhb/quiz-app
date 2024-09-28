@@ -10,15 +10,18 @@ import (
 	"github.com/shaileshhb/quiz/src/security"
 )
 
+// UserController will consist of controllers methods that would be implemented by userController
 type UserController interface {
 	Register(*models.User) (*models.LoginResponse, error)
 	Login(*models.Login) (*models.LoginResponse, error)
 }
 
+// userController will contain reference to db.
 type userController struct {
 	db *db.Database
 }
 
+// NewUserController will create new instance of userController
 func NewUserController(db *db.Database) UserController {
 	return &userController{
 		db: db,

@@ -11,7 +11,7 @@ import (
 	"github.com/shaileshhb/quiz/src/utils"
 )
 
-// QuizController will consist of controllers
+// QuizController will consist of controllers methods that would be implemented by quizController
 type QuizController interface {
 	Create(quiz *models.Quiz) error
 	GetQuiz(quizID uuid.UUID) (*models.Quiz, error)
