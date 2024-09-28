@@ -28,8 +28,9 @@ func NewDatabase() *Database {
 func createDummyQuiz(db *Database) {
 	quizID, _ := uuid.Parse("997f06f9-89d1-4f95-9300-09caee4d6b40")
 	quiz := models.Quiz{
-		ID:    quizID,
-		Title: "Sample Quiz",
+		ID:      quizID,
+		Title:   "Sample Quiz",
+		MaxTime: 1,
 	}
 
 	quiz.Questions = createDummyQuestions(quiz.ID)

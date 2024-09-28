@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -11,6 +12,8 @@ type UserQuizAttempts struct {
 	ID            uuid.UUID      `json:"id"`
 	UserID        uuid.UUID      `json:"userID"`
 	QuizID        uuid.UUID      `json:"quizID"`
+	StartedAt     *time.Time     `json:"startedAt"`
+	EndedAt       *time.Time     `json:"endAt"`
 	TotalScore    uint32         `json:"totalScore"`
 	UserResponses []UserResponse `json:"userResponses"`
 }

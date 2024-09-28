@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shaileshhb/quiz/src/db"
@@ -13,6 +14,7 @@ import (
 type UserQuizController interface {
 	StartQuiz(*models.UserQuizAttempts) error
 	SubmitAnswer(*models.UserResponse) (*models.Option, error)
+	GetUserQuizResults(uuid.UUID, uuid.UUID) (*models.UserQuizAttempts, error)
 }
 
 // userQuizController will contain reference to db.
@@ -47,6 +49,8 @@ func (controller *userQuizController) StartQuiz(userQuiz *models.UserQuizAttempt
 		}
 	}
 
+	startTime := time.Now()
+	userQuiz.StartedAt = &startTime
 	userQuiz.TotalScore = 0
 	userQuiz.ID = uuid.New()
 
@@ -63,6 +67,11 @@ func (controller *userQuizController) SubmitAnswer(userResponse *models.UserResp
 	}
 
 	err = validations.DoesQuizIDExist(controller.db, userResponse.QuizID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = controller.isQuizCompleted(userResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -114,13 +123,40 @@ func (controller *userQuizController) SubmitAnswer(userResponse *models.UserResp
 
 	for i, attempts := range controller.db.UserQuizAttempts {
 		if attempts.ID == userResponse.UserQuizAttemptID {
-
 			controller.db.UserQuizAttempts[i].UserResponses = append(controller.db.UserQuizAttempts[i].UserResponses, *userResponse)
+
+			if len(quiz.Questions) == len(controller.db.UserQuizAttempts[i].UserResponses) {
+				endedAt := time.Now()
+				controller.db.UserQuizAttempts[i].EndedAt = &endedAt
+				break
+			}
 			break
 		}
 	}
 
 	return correctOption, nil
+}
+
+// GetUserQuizResults will return results for specific quiz for specified user.
+func (controller *userQuizController) GetUserQuizResults(userID, quizID uuid.UUID) (*models.UserQuizAttempts, error) {
+
+	err := validations.DoesUserIDExist(controller.db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = validations.DoesQuizIDExist(controller.db, quizID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, attempt := range controller.db.UserQuizAttempts {
+		if attempt.UserID == userID && attempt.QuizID == quizID {
+			return &attempt, nil
+		}
+	}
+
+	return nil, errors.New("user not attempted specified quiz")
 }
 
 // updateUserQuizScore will updaate the total score of the UserQuizAttempts.
@@ -208,6 +244,29 @@ func (controller *userQuizController) isQuestionAnswered(userQuiz *models.UserQu
 		if repsonse.QuestionID == questionID {
 			return errors.New("question already answered")
 		}
+	}
+
+	return nil
+}
+
+// isQuizCompleted will check if quiz has ended or max time is exceeded.
+func (controller *userQuizController) isQuizCompleted(userResponse *models.UserResponse) error {
+	userQuiz, err := controller.getUserQuiz(userResponse.UserQuizAttemptID)
+	if err != nil {
+		return err
+	}
+
+	if userQuiz.EndedAt != nil {
+		return errors.New("cannot answer questions after quiz has ended")
+	}
+
+	quiz, err := controller.getQuizByID(userQuiz.QuizID)
+	if err != nil {
+		return err
+	}
+
+	if time.Since(*userQuiz.StartedAt) > time.Duration(quiz.MaxTime*uint64(time.Minute)) {
+		return errors.New("maximum time exceeded for this quiz")
 	}
 
 	return nil

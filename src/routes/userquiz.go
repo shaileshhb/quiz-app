@@ -27,8 +27,9 @@ func NewUserQuizRoute(con controllers.UserQuizController, log zerolog.Logger) *u
 
 // RegisterRoute registers all endpoints to router.
 func (u *userQuizRoute) RegisterRoute(router fiber.Router) {
-	router.Post("/user/quiz/:quizID/start", security.MandatoryAuthMiddleware, u.startQuiz)
-	router.Post("/user/quiz/:quizID/attempt/:attemptID", security.MandatoryAuthMiddleware, u.submitAnswer)
+	router.Post("/users/quiz/:quizID/start", security.MandatoryAuthMiddleware, u.startQuiz)
+	router.Post("/users/quiz/:quizID/attempt/:attemptID", security.MandatoryAuthMiddleware, u.submitAnswer)
+	router.Get("/users/quiz/:quizID/results", security.MandatoryAuthMiddleware, u.getUserQuizResults)
 	u.log.Info().Msg("User quiz routes registered")
 }
 
@@ -121,4 +122,28 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 		"isCorrect":     userResponse.IsCorrect,
 		"correctOption": correctOption,
 	})
+}
+
+// getUserQuizResults will return results for specific quiz for specified user.
+func (ur *userQuizRoute) getUserQuizResults(c *fiber.Ctx) error {
+	userInterface := c.Locals("user")
+	user := userInterface.(*models.User)
+
+	quizID, err := uuid.Parse(c.Params("quizID"))
+	if err != nil {
+		ur.log.Error().Err(err).Msg("")
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	userQuiz, err := ur.con.GetUserQuizResults(user.ID, quizID)
+	if err != nil {
+		ur.log.Error().Err(err).Msg("")
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusOK).JSON(userQuiz)
 }
