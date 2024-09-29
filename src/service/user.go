@@ -1,4 +1,4 @@
-package controllers
+package service
 
 import (
 	"errors"
@@ -10,31 +10,31 @@ import (
 	"github.com/shaileshhb/quiz/src/security"
 )
 
-// UserController will consist of controllers methods that would be implemented by userController
-type UserController interface {
+// UserService will consist of service methods that would be implemented by userService
+type UserService interface {
 	Register(*models.User) (*models.LoginResponse, error)
 	Login(*models.Login) (*models.LoginResponse, error)
 }
 
-// userController will contain reference to db.
-type userController struct {
+// userService will contain reference to db.
+type userService struct {
 	db *db.Database
 }
 
-// NewUserController will create new instance of userController
-func NewUserController(db *db.Database) UserController {
-	return &userController{
+// NewUserService will create new instance of userService
+func NewUserService(db *db.Database) UserService {
+	return &userService{
 		db: db,
 	}
 }
 
 // Register will register new user in the system.
-func (controller *userController) Register(user *models.User) (*models.LoginResponse, error) {
+func (service *userService) Register(user *models.User) (*models.LoginResponse, error) {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Username = strings.TrimSpace(user.Username)
 	user.Password = strings.TrimSpace(user.Password)
 
-	err := controller.checkDuplicateExist(user.Username)
+	err := service.checkDuplicateExist(user.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (controller *userController) Register(user *models.User) (*models.LoginResp
 	user.Password = string(password)
 	user.ID = uuid.New()
 
-	controller.db.Users = append(controller.db.Users, *user)
+	service.db.Users = append(service.db.Users, *user)
 
 	loginResponse := models.LoginResponse{
 		ID:       user.ID,
@@ -64,11 +64,11 @@ func (controller *userController) Register(user *models.User) (*models.LoginResp
 }
 
 // Login user.
-func (controller *userController) Login(login *models.Login) (*models.LoginResponse, error) {
+func (service *userService) Login(login *models.Login) (*models.LoginResponse, error) {
 	login.Username = strings.TrimSpace(login.Username)
 	login.Password = strings.TrimSpace(login.Password)
 
-	user, err := controller.getUserByUsername(login.Username)
+	user, err := service.getUserByUsername(login.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +93,8 @@ func (controller *userController) Login(login *models.Login) (*models.LoginRespo
 }
 
 // checkDuplicateExist will check if same username already exists in database.
-func (controller *userController) checkDuplicateExist(username string) error {
-	for _, user := range controller.db.Users {
+func (service *userService) checkDuplicateExist(username string) error {
+	for _, user := range service.db.Users {
 		if strings.EqualFold(strings.ToLower(user.Username), strings.ToLower(username)) {
 			return errors.New("same username already exists")
 		}
@@ -104,8 +104,8 @@ func (controller *userController) checkDuplicateExist(username string) error {
 }
 
 // getUserByUsername will fetch user by username. If not found, it will return error
-func (controller *userController) getUserByUsername(username string) (*models.User, error) {
-	for _, user := range controller.db.Users {
+func (service *userService) getUserByUsername(username string) (*models.User, error) {
+	for _, user := range service.db.Users {
 		if strings.EqualFold(strings.ToLower(user.Username), strings.ToLower(username)) {
 			return &user, nil
 		}

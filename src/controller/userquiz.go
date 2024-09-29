@@ -1,4 +1,4 @@
-package routes
+package controller
 
 import (
 	"net/http"
@@ -6,40 +6,40 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
-	"github.com/shaileshhb/quiz/src/controllers"
 	"github.com/shaileshhb/quiz/src/db/models"
 	"github.com/shaileshhb/quiz/src/security"
+	serv "github.com/shaileshhb/quiz/src/service"
 )
 
-// userQuizRoute contains reference to quiz controller and logger
-type userQuizRoute struct {
-	con controllers.UserQuizController
-	log zerolog.Logger
+// userQuizController contains reference to user quiz serivce and logger
+type userQuizController struct {
+	service serv.UserQuizService
+	log     zerolog.Logger
 }
 
-// NewUserQuizRoute will create new instance of userQuizRoute.
-func NewUserQuizRoute(con controllers.UserQuizController, log zerolog.Logger) *userQuizRoute {
-	return &userQuizRoute{
-		con: con,
-		log: log,
+// NewUserQuizController will create new instance of userQuizRoute.
+func NewUserQuizController(service serv.UserQuizService, log zerolog.Logger) *userQuizController {
+	return &userQuizController{
+		service: service,
+		log:     log,
 	}
 }
 
 // RegisterRoute registers all endpoints to router.
-func (u *userQuizRoute) RegisterRoute(router fiber.Router) {
-	router.Post("/users/quizzes/:quizID/start", security.MandatoryAuthMiddleware, u.startQuiz)
-	router.Post("/users/quizzes/:quizID/attempt/:attemptID", security.MandatoryAuthMiddleware, u.submitAnswer)
-	router.Get("/users/quizzes/:quizID/results", security.MandatoryAuthMiddleware, u.getUserQuizResults)
-	u.log.Info().Msg("User quiz routes registered")
+func (controller *userQuizController) RegisterRoute(router fiber.Router) {
+	router.Post("/users/quizzes/:quizID/start", security.MandatoryAuthMiddleware, controller.startQuiz)
+	router.Post("/users/quizzes/:quizID/attempt/:attemptID", security.MandatoryAuthMiddleware, controller.submitAnswer)
+	router.Get("/users/quizzes/:quizID/results", security.MandatoryAuthMiddleware, controller.getUserQuizResults)
+	controller.log.Info().Msg("User quiz routes registered")
 }
 
 // startQuiz will start a quiz for a user.
-func (qr *userQuizRoute) startQuiz(c *fiber.Ctx) error {
+func (controller *userQuizController) startQuiz(c *fiber.Ctx) error {
 	userQuiz := models.UserQuizAttempts{}
 
 	quizID, err := uuid.Parse(c.Params("quizID"))
 	if err != nil {
-		qr.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -52,15 +52,15 @@ func (qr *userQuizRoute) startQuiz(c *fiber.Ctx) error {
 
 	err = userQuiz.Validate()
 	if err != nil {
-		qr.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	err = qr.con.StartQuiz(&userQuiz)
+	err = controller.service.StartQuiz(&userQuiz)
 	if err != nil {
-		qr.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -70,12 +70,12 @@ func (qr *userQuizRoute) startQuiz(c *fiber.Ctx) error {
 }
 
 // submitAnswer will submit user's answer for a given question.
-func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
+func (controller *userQuizController) submitAnswer(c *fiber.Ctx) error {
 	userResponse := models.UserResponse{}
 
 	err := c.BodyParser(&userResponse)
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -83,7 +83,7 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 
 	userResponse.QuizID, err = uuid.Parse(c.Params("quizID"))
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -91,7 +91,7 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 
 	userResponse.UserQuizAttemptID, err = uuid.Parse(c.Params("attemptID"))
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -104,15 +104,15 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 
 	err = userResponse.Validate()
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	correctOption, err := ur.con.SubmitAnswer(&userResponse)
+	correctOption, err := controller.service.SubmitAnswer(&userResponse)
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -125,21 +125,21 @@ func (ur *userQuizRoute) submitAnswer(c *fiber.Ctx) error {
 }
 
 // getUserQuizResults will return results for specific quiz for specified user.
-func (ur *userQuizRoute) getUserQuizResults(c *fiber.Ctx) error {
+func (controller *userQuizController) getUserQuizResults(c *fiber.Ctx) error {
 	userInterface := c.Locals("user")
 	user := userInterface.(*models.User)
 
 	quizID, err := uuid.Parse(c.Params("quizID"))
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	userQuiz, err := ur.con.GetUserQuizResults(user.ID, quizID)
+	userQuiz, err := controller.service.GetUserQuizResults(user.ID, quizID)
 	if err != nil {
-		ur.log.Error().Err(err).Msg("")
+		controller.log.Error().Err(err).Msg("")
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})

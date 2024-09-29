@@ -1,4 +1,4 @@
-package controllers
+package service
 
 import (
 	"errors"
@@ -10,27 +10,27 @@ import (
 	"github.com/shaileshhb/quiz/src/utils"
 )
 
-// QuizController will consist of controllers methods that would be implemented by quizController
-type QuizController interface {
+// QuizService will consist of service methods that would be implemented by quizService
+type QuizService interface {
 	Create(quiz *models.Quiz) error
 	GetQuiz(quizID uuid.UUID) (*models.Quiz, error)
 }
 
-// quizController will contain reference to db.
-type quizController struct {
+// quizService will contain reference to db.
+type quizService struct {
 	db *db.Database
 }
 
-// NewQuizController will create new instance of quizController
-func NewQuizController(db *db.Database) QuizController {
-	return &quizController{db: db}
+// NewQuizService will create new instance of quizService
+func NewQuizService(db *db.Database) QuizService {
+	return &quizService{db: db}
 }
 
 // Create will create new quiz in database.
-func (controller *quizController) Create(quiz *models.Quiz) error {
+func (service *quizService) Create(quiz *models.Quiz) error {
 	quiz.Title = strings.TrimSpace(quiz.Title)
 
-	err := controller.checkTitleExist(quiz.Title)
+	err := service.checkTitleExist(quiz.Title)
 	if err != nil {
 		return err
 	}
@@ -39,18 +39,18 @@ func (controller *quizController) Create(quiz *models.Quiz) error {
 		quiz.MaxTime = 2
 	}
 
-	controller.assignIDs(quiz)
+	service.assignIDs(quiz)
 
-	controller.db.Quiz = append(controller.db.Quiz, *quiz)
+	service.db.Quiz = append(service.db.Quiz, *quiz)
 	return nil
 }
 
 // GetQuiz will get quiz by ID from database.
-func (controller *quizController) GetQuiz(quizID uuid.UUID) (*models.Quiz, error) {
+func (service *quizService) GetQuiz(quizID uuid.UUID) (*models.Quiz, error) {
 	currentQuiz := models.Quiz{}
 	isQuizFound := false
 
-	for _, q := range controller.db.Quiz {
+	for _, q := range service.db.Quiz {
 		if q.ID == quizID {
 			isQuizFound = true
 
@@ -67,8 +67,8 @@ func (controller *quizController) GetQuiz(quizID uuid.UUID) (*models.Quiz, error
 }
 
 // checkTitleExist will check if quiz with same title already exists in database.
-func (controller *quizController) checkTitleExist(title string) error {
-	for _, quiz := range controller.db.Quiz {
+func (service *quizService) checkTitleExist(title string) error {
+	for _, quiz := range service.db.Quiz {
 		if strings.EqualFold(strings.ToLower(quiz.Title), strings.ToLower(title)) {
 			return errors.New("quiz with same title already exists")
 		}
@@ -77,7 +77,7 @@ func (controller *quizController) checkTitleExist(title string) error {
 	return nil
 }
 
-func (controller *quizController) assignIDs(quiz *models.Quiz) {
+func (service *quizService) assignIDs(quiz *models.Quiz) {
 	quiz.ID = uuid.New()
 
 	for i := range quiz.Questions {
