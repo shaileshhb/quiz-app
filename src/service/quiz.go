@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/shaileshhb/quiz/src/db"
 	"github.com/shaileshhb/quiz/src/db/models"
-	"github.com/shaileshhb/quiz/src/utils"
 )
 
 // QuizService will consist of service methods that would be implemented by quizService
@@ -54,7 +53,7 @@ func (service *quizService) GetQuiz(quizID uuid.UUID) (*models.Quiz, error) {
 		if q.ID == quizID {
 			isQuizFound = true
 
-			currentQuiz = utils.CopyQuiz(q)
+			currentQuiz = copyQuiz(q)
 			break
 		}
 	}
@@ -88,5 +87,44 @@ func (service *quizService) assignIDs(quiz *models.Quiz) {
 			quiz.Questions[i].Options[j].ID = uuid.New()
 			quiz.Questions[i].Options[j].QuestionID = quiz.Questions[i].ID
 		}
+	}
+}
+
+func copyQuiz(q models.Quiz) models.Quiz {
+	var questions []models.Question
+
+	for _, question := range q.Questions {
+		questions = append(questions, copyQuestion(question))
+	}
+
+	return models.Quiz{
+		ID:        q.ID,
+		Title:     q.Title,
+		MaxTime:   q.MaxTime,
+		Questions: questions,
+	}
+}
+
+func copyQuestion(q models.Question) models.Question {
+	var options []models.Option
+
+	for _, option := range q.Options {
+		options = append(options, copyOption(option))
+	}
+
+	return models.Question{
+		ID:      q.ID,
+		QuizID:  q.QuizID,
+		Text:    q.Text,
+		Options: options,
+	}
+}
+
+func copyOption(o models.Option) models.Option {
+	return models.Option{
+		ID:         o.ID,
+		QuestionID: o.QuestionID,
+		Answer:     o.Answer,
+		IsCorrect:  nil,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/shaileshhb/quiz/src/utils"
 )
 
 // Option will contain options for specific question.
@@ -16,8 +17,21 @@ type Option struct {
 
 // Validate will validate if all fields for a option are correctly specified.
 func (o *Option) Validate() error {
+	if len(o.Answer) == 0 {
+		return errors.New("answer must be specified")
+	}
+
 	if len(o.Answer) > 200 {
 		return errors.New("answer should not exceed 200 characters")
+	}
+
+	isValid, err := utils.ValidateString(o.Answer, `^[a-zA-Z0-9@$!%*/&\s]+$`)
+	if err != nil {
+		return err
+	}
+
+	if !isValid {
+		return errors.New("answer contains invalid characters")
 	}
 
 	if o.IsCorrect == nil {
