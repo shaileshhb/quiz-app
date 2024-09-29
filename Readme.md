@@ -196,7 +196,7 @@ Start specifed quiz for the logged in user
 ```
 
 ### 6. Submit Answers
-**POST** `/api/v1/users/quizzes/:quizID/attempt/:userQuizAttemptID`
+**POST** `/api/v1/users/quizzes/:quizID/attempts/:attemptID`
 
 **Headers**: Requires `Authorization: Bearer <token>`
 
