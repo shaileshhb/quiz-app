@@ -2,19 +2,6 @@
 
 This is a simple quiz application that allows users to participate in quizzes, view results, and manage quizzes.
 
-## Features
-- Create, edit, and delete quizzes.
-- Participate in quizzes and get scores.
-- Admin panel to manage quizzes.
-  
-## Tech Stack
-- Node.js (Backend)
-- Express.js (Framework)
-- PostgreSQL (Database)
-- Sequelize (ORM)
-- Docker (Containerization)
-- Docker Compose (Service Orchestration)
-
 ## Prerequisites
 - Docker and Docker Compose must be installed on your system.
 
@@ -103,6 +90,7 @@ Logs in an existing user.
   - `options` (array): An array of options with one correct answer. Each must contain 4 options
     - `answer` (string): Specifies the answer
     - `isCorrect` (boolean): Whether the answer is correct
+
 Example:
 ```json
 {
@@ -212,6 +200,22 @@ Start specifed quiz for the logged in user
 
 **Headers**: Requires `Authorization: Bearer <token>`
 
+**Body Parameters:**
+- `questionID` (uuid): Question id of current quiz that has been started.
+- `selectedOptionID` (uuid): Option id which the user feels is correct answer.
+
+**Response:**
+```json
+{
+  "correctOption": {
+    "id": "ba70f25c-1cdc-413a-8a58-dfde75dd00f1",
+    "questionID": "4c93af6a-b993-4311-b243-4d84f6679a4c",
+    "answer": "Paris",
+    "isCorrect": true
+  },
+  "isCorrect": false
+}
+```
 
 ### 7. Get Quiz Results
 **GET** `/api/v1/users/quizzes/:quizID/results`
