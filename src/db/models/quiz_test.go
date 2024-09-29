@@ -4,16 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	model "github.com/shaileshhb/quiz/src/db/models"
 )
 
 // TestValidateEmptyTitle will test for empty quiz title
 func TestValidateEmptyTitle(t *testing.T) {
-	quiz := model.Quiz{
+	quiz := Quiz{
 		Title:     "",
 		MaxTime:   2,
-		Questions: []model.Question{},
+		Questions: []Question{},
 	}
 
 	err := quiz.Validate()
@@ -24,10 +22,10 @@ func TestValidateEmptyTitle(t *testing.T) {
 
 // TestValidateTitleLessThanFive will test for quiz title less than five characters
 func TestValidateTitleLessThanFive(t *testing.T) {
-	quiz := model.Quiz{
+	quiz := Quiz{
 		Title:     "one",
 		MaxTime:   2,
-		Questions: []model.Question{},
+		Questions: []Question{},
 	}
 
 	err := quiz.Validate()
@@ -38,10 +36,10 @@ func TestValidateTitleLessThanFive(t *testing.T) {
 
 // TestValidateTitleGreaterThanFifty will test for quiz title more than twenty characters
 func TestValidateTitleGreaterThanFifty(t *testing.T) {
-	quiz := model.Quiz{
+	quiz := Quiz{
 		Title:     "thisisaverylongtitlethatexceeds50charactersneedtoaddmorecharacters",
 		MaxTime:   2,
-		Questions: []model.Question{},
+		Questions: []Question{},
 	}
 
 	err := quiz.Validate()
@@ -52,10 +50,10 @@ func TestValidateTitleGreaterThanFifty(t *testing.T) {
 
 // TestValidateTitleRegex will test if title has valid characters
 func TestValidateTitleRegex(t *testing.T) {
-	quiz := model.Quiz{
+	quiz := Quiz{
 		Title:     "# invalid regex (title)",
 		MaxTime:   2,
-		Questions: []model.Question{},
+		Questions: []Question{},
 	}
 
 	err := quiz.Validate()
@@ -66,10 +64,10 @@ func TestValidateTitleRegex(t *testing.T) {
 
 // TestValidateTotalQuestions will test if atleast one question is specified
 func TestValidateTotalQuestions(t *testing.T) {
-	quiz := model.Quiz{
+	quiz := Quiz{
 		Title:     "Sample quiz",
 		MaxTime:   2,
-		Questions: []model.Question{},
+		Questions: []Question{},
 	}
 
 	err := quiz.Validate()

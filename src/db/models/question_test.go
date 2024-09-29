@@ -5,16 +5,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-
-	model "github.com/shaileshhb/quiz/src/db/models"
 )
 
 // TestValidateEmptyText will test for empty question text
 func TestValidateEmptyText(t *testing.T) {
-	question := model.Question{
+	question := Question{
 		Text:    "",
 		QuizID:  uuid.New(),
-		Options: []model.Option{},
+		Options: []Option{},
 	}
 
 	err := question.Validate()
@@ -25,10 +23,10 @@ func TestValidateEmptyText(t *testing.T) {
 
 // TestValidateTextRegex will test for valid characters in text
 func TestValidateTextRegex(t *testing.T) {
-	question := model.Question{
+	question := Question{
 		Text:    "# This is question text",
 		QuizID:  uuid.New(),
-		Options: []model.Option{},
+		Options: []Option{},
 	}
 
 	err := question.Validate()
@@ -39,10 +37,10 @@ func TestValidateTextRegex(t *testing.T) {
 
 // TestValidateOptions will test for valid number of options
 func TestValidateOptions(t *testing.T) {
-	question := model.Question{
+	question := Question{
 		Text:    "This is question text",
 		QuizID:  uuid.New(),
-		Options: []model.Option{},
+		Options: []Option{},
 	}
 
 	err := question.Validate()
@@ -56,10 +54,10 @@ func TestValidateOptionsMax(t *testing.T) {
 	trueValue := true
 	falseValue := false
 
-	question := model.Question{
+	question := Question{
 		Text:   "This is question text",
 		QuizID: uuid.New(),
-		Options: []model.Option{
+		Options: []Option{
 			{
 				Answer:    "This is answer 1",
 				IsCorrect: &trueValue,
@@ -89,10 +87,10 @@ func TestValidateOptionsMax(t *testing.T) {
 func TestValidateIsCorrect(t *testing.T) {
 	falseValue := false
 
-	question := model.Question{
+	question := Question{
 		Text:   "This is question text",
 		QuizID: uuid.New(),
-		Options: []model.Option{
+		Options: []Option{
 			{
 				Answer:    "This is answer 1",
 				IsCorrect: &falseValue,

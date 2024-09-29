@@ -27,8 +27,6 @@ func NewQuizService(db *db.Database) QuizService {
 
 // Create will create new quiz in database.
 func (service *quizService) Create(quiz *models.Quiz) error {
-	quiz.Title = strings.TrimSpace(quiz.Title)
-
 	err := service.checkTitleExist(quiz.Title)
 	if err != nil {
 		return err

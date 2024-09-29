@@ -5,15 +5,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-
-	model "github.com/shaileshhb/quiz/src/db/models"
 )
 
 // TestValidateEmptyAnswer will test for empty answer in option
 func TestValidateEmptyAnswer(t *testing.T) {
 	falseValue := false
 
-	option := model.Option{
+	option := Option{
 		Answer:     "",
 		QuestionID: uuid.New(),
 		IsCorrect:  &falseValue,
@@ -29,7 +27,7 @@ func TestValidateEmptyAnswer(t *testing.T) {
 func TestValidateAnswerRegex(t *testing.T) {
 	falseValue := false
 
-	option := model.Option{
+	option := Option{
 		Answer:     "# This is invalid answer",
 		QuestionID: uuid.New(),
 		IsCorrect:  &falseValue,
@@ -44,7 +42,7 @@ func TestValidateAnswerRegex(t *testing.T) {
 // TestValidateOptionIsCorrect will test for valid value in iscorret field
 func TestValidateOptionIsCorrect(t *testing.T) {
 
-	option := model.Option{
+	option := Option{
 		Answer:     "This is invalid answer",
 		QuestionID: uuid.New(),
 		IsCorrect:  nil,

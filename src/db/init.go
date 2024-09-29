@@ -96,9 +96,10 @@ func createDummyOptions(questionID uuid.UUID) []models.Option {
 }
 
 func createDummyUsers(db *Database) {
+	id, _ := uuid.Parse("bfc8ec19-124b-40a1-8936-12dace6fd162")
 	password, _ := security.HashPassword("userone")
 	user := models.User{
-		ID:       uuid.New(),
+		ID:       id,
 		Name:     "User one",
 		Username: "userone",
 		Password: string(password),
