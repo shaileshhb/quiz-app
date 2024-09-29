@@ -4,9 +4,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/rs/zerolog"
-	"github.com/shaileshhb/quiz/src/controllers"
+	"github.com/shaileshhb/quiz/src/controller"
 	"github.com/shaileshhb/quiz/src/db"
-	"github.com/shaileshhb/quiz/src/routes"
+	"github.com/shaileshhb/quiz/src/service"
 )
 
 // Server Struct For Start the equisplit service.
@@ -57,16 +57,16 @@ func (ser *Server) register(routes []RegisterRoutes) {
 }
 
 func (ser *Server) RegisterModuleRoutes() {
-	quizcon := controllers.NewQuizController(ser.Database)
-	quizroute := routes.NewQuizRoute(quizcon, ser.Log)
+	quizserv := service.NewQuizService(ser.Database)
+	quizcon := controller.NewQuizController(quizserv, ser.Log)
 
-	usercon := controllers.NewUserController(ser.Database)
-	userroute := routes.NewUserRoute(usercon, ser.Log)
+	userserv := service.NewUserService(ser.Database)
+	usercon := controller.NewUserController(userserv, ser.Log)
 
-	userquizcon := controllers.NewUserQuizController(ser.Database)
-	userquizroute := routes.NewUserQuizRoute(userquizcon, ser.Log)
+	userquizserv := service.NewUserQuizService(ser.Database)
+	userquizcon := controller.NewUserQuizController(userquizserv, ser.Log)
 
 	ser.register([]RegisterRoutes{
-		quizroute, userroute, userquizroute,
+		quizcon, usercon, userquizcon,
 	})
 }
